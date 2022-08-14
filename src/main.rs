@@ -12,49 +12,62 @@ fn main() -> Result {
     ctx.scale(1.0, -1.0);
     ctx.set_source_rgb(0.0, 0.0, 0.0);
 
-    let r = x * 0.1;
+    // debug
+    scoped(&ctx, |ctx| {
+        ctx.set_source_rgb(1.0, 0.0, 0.0);
+        ctx.arc(0.0, 0.0, x / 250.0, 0.0, PI * 2.0);
+        ctx.fill()?;
+        ctx.set_line_width(x * 0.008);
+        ctx.move_to(-x * 0.5, x * 0.5);
+        ctx.line_to(x * 0.5, x * 0.5);
+        ctx.line_to(x * 0.5, -x * 0.5);
+        ctx.line_to(-x * 0.5, -x * 0.5);
+        ctx.line_to(-x * 0.5, x * 0.5);
+        ctx.stroke()
+    })?;
+    // old design
+    scoped(&ctx, |ctx| {
+        ctx.set_source_rgb(0.298, 0.376, 0.898);
+        ctx.rotate(PI / 6.0);
+        old_design(&ctx, x)
+    })?;
+
+    let r = x * 0.08;
     let a = r * 0.5;
     let b = a * f64::sqrt(3.0);
     let s = b / f64::cos(PI / 6.0);
     let n = 5;
     let l = r + (s * n as f64);
-    translated(&ctx, -(l - r) / 2.0, 0.0, |ctx| {
-        ctx.set_line_width(r * 0.2);
-        ctx.arc(0.0, 0.0, r * 0.4, 0.0, PI * 2.0);
+    // translated(&ctx, -(l - r + (r * 0.1)) / 2.0, 0.0, |ctx| {
+    ctx.set_line_width(r * 0.2);
+    ctx.arc(0.0, 0.0, r * 0.4, 0.0, PI * 2.0);
 
-        ctx.move_to(r, 0.0);
-        ctx.line_to(a, -b);
-        ctx.line_to(-a, -b);
-        ctx.line_to(-r, 0.0);
-        ctx.line_to(-a, b);
-        ctx.line_to(a, b);
-        ctx.line_to(r, 0.0);
+    ctx.move_to(r, 0.0);
+    ctx.line_to(a, -b);
+    ctx.line_to(-a, -b);
+    ctx.line_to(-r, 0.0);
+    ctx.line_to(-a, b);
+    ctx.line_to(a, b);
+    ctx.line_to(r, 0.0);
 
-        ctx.line_to(l, 0.0);
-        ctx.move_to(0.0, b);
-        ctx.line_to(l - (s + a), b);
-        ctx.line_to(l, 0.0);
-        ctx.line_to(l - (s + a), -b);
-        ctx.line_to(0.0, -b);
-        for i in 0..(n - 1) {
-            ctx.move_to(a + (s * i as f64), b);
-            ctx.line_to(r + (s * (i + 1) as f64), 0.0);
-            ctx.line_to(a + (s * i as f64), -b);
-        }
-
-        ctx.stroke()
-    })?;
-
-    {
-        // debug point
-        ctx.save()?;
-        ctx.set_source_rgb(1.0, 0.0, 0.0);
-        ctx.arc(0.0, 0.0, x / 250.0, 0.0, PI * 2.0);
-        ctx.fill()?;
-        ctx.restore()?;
+    ctx.line_to(l, 0.0);
+    ctx.move_to(0.0, b);
+    ctx.line_to(l - (s + a), b);
+    ctx.line_to(l, 0.0);
+    ctx.line_to(l - (s + a), -b);
+    ctx.line_to(0.0, -b);
+    for i in 0..(n - 1) {
+        ctx.move_to(a + (s * i as f64), b);
+        ctx.line_to(r + (s * (i + 1) as f64), 0.0);
+        ctx.line_to(a + (s * i as f64), -b);
     }
 
-    // old_design(&ctx, x)?;
+    ctx.stroke()?;
+    // })?;
+
+    ctx.set_line_width(x * 0.02);
+    ctx.arc(0.0, 0.0, x * 0.375, 0.0, PI * 2.0);
+    ctx.stroke()?;
 
     Ok(())
 }
@@ -62,6 +75,12 @@ fn main() -> Result {
 fn translated(ctx: &Context, dx: f64, dy: f64, f: impl Fn(&Context) -> Result) -> Result {
     ctx.save()?;
     ctx.translate(dx, dy);
+    f(ctx)?;
+    ctx.restore()
+}
+
+fn scoped(ctx: &Context, f: impl Fn(&Context) -> Result) -> Result {
+    ctx.save()?;
     f(ctx)?;
     ctx.restore()
 }
