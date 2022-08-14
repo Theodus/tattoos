@@ -31,43 +31,10 @@ fn main() -> Result {
         ctx.rotate(PI / 6.0);
         old_design(&ctx, x)
     })?;
+
     let w1 = x * 0.015;
     let w2 = w1 * 0.5;
-    // central element
-    scoped(&ctx, |ctx| {
-        let r = x * 0.08;
-        let a = r * 0.5;
-        let b = a * f64::sqrt(3.0);
-        let s = b / f64::cos(PI / 6.0);
-        let n = 5;
-        let l = r + (s * n as f64);
 
-        ctx.set_line_width(w1);
-        ctx.arc(0.0, 0.0, r * 0.4, 0.0, PI * 2.0);
-
-        ctx.move_to(r, 0.0);
-        ctx.line_to(a, -b);
-        ctx.line_to(-a, -b);
-        ctx.line_to(-r, 0.0);
-        ctx.line_to(-a, b);
-        ctx.line_to(a, b);
-
-        ctx.line_to(r, 0.0);
-        ctx.line_to(l, 0.0);
-        ctx.move_to(0.0, b);
-        ctx.line_to(l - (s + a), b);
-        ctx.line_to(l, 0.0);
-        ctx.line_to(l - (s + a), -b);
-        ctx.line_to(0.0, -b);
-
-        for i in 0..(n - 1) {
-            ctx.move_to(a + (s * i as f64), b);
-            ctx.line_to(r + (s * (i + 1) as f64), 0.0);
-            ctx.line_to(a + (s * i as f64), -b);
-        }
-
-        ctx.stroke()
-    })?;
     // outer ring
     scoped(&ctx, |ctx| {
         ctx.set_line_width(w2);
@@ -87,8 +54,69 @@ fn main() -> Result {
             ctx.stroke()?;
             ctx.set_line_width(w2);
             ctx.arc(0.0, 0.0, x * 0.5 * 0.085, 0.0, PI * 2.0);
-            ctx.stroke()?;
+            ctx.stroke()
+        })?;
+        radial_repeat(&ctx, 12, PI / 12.0, false, |ctx| {
+            ctx.translate(0.0, r);
+            ctx.set_line_width(w2);
+            isosceles_triangle_stroke(&ctx, x * 0.15, PI / 3.6)?;
+            // ctx.translate(0.0, x * 0.5 * 0.05);
+            // ctx.set_line_width(x * 0.5 * 0.02);
+            // isosceles_triangle_stroke(&ctx, x * 0.5 * 0.08, PI / 3.4)?;
+            // ctx.translate(0.0, x * 0.5 * 0.08);
+            // isosceles_triangle_stroke(&ctx, x * 0.5 * 0.08, PI / 3.4)?;
+            // ctx.translate(0.0, x * 0.5 * 0.08);
+            // isosceles_triangle_stroke(&ctx, x * 0.5 * 0.08, PI / 3.4)?;
             Ok(())
+        })?;
+
+        // central element
+        scoped(&ctx, |ctx| {
+            let r = x * 0.08;
+            let a = r * 0.5;
+            let b = a * f64::sqrt(3.0);
+            let s = b / f64::cos(PI / 6.0);
+            let n = 5;
+            let l = r + (s * n as f64);
+
+            // mask
+            scoped(&ctx, |ctx| {
+                ctx.set_operator(cairo::Operator::Clear);
+                // ctx.set_source_rgb(0.0, 1.0, 1.0);
+                ctx.move_to(-a, b);
+                ctx.line_to(-r, 0.0);
+                ctx.line_to(-a, -b);
+                ctx.line_to(l - (s + a), -b);
+                ctx.line_to(l, 0.0);
+                ctx.line_to(l - (s + a), b);
+                ctx.fill()
+            })?;
+
+            ctx.set_line_width(w1);
+            ctx.arc(0.0, 0.0, r * 0.4, 0.0, PI * 2.0);
+
+            ctx.move_to(r, 0.0);
+            ctx.line_to(a, -b);
+            ctx.line_to(-a, -b);
+            ctx.line_to(-r, 0.0);
+            ctx.line_to(-a, b);
+            ctx.line_to(a, b);
+
+            ctx.line_to(r, 0.0);
+            ctx.line_to(l, 0.0);
+            ctx.move_to(0.0, b);
+            ctx.line_to(l - (s + a), b);
+            ctx.line_to(l, 0.0);
+            ctx.line_to(l - (s + a), -b);
+            ctx.line_to(0.0, -b);
+
+            for i in 0..(n - 1) {
+                ctx.move_to(a + (s * i as f64), b);
+                ctx.line_to(r + (s * (i + 1) as f64), 0.0);
+                ctx.line_to(a + (s * i as f64), -b);
+            }
+
+            ctx.stroke()
         })?;
 
         Ok(())
