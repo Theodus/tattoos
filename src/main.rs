@@ -12,26 +12,6 @@ fn main() -> Result {
     ctx.scale(1.0, -1.0);
     ctx.set_source_rgb(0.0, 0.0, 0.0);
 
-    // debug
-    scoped(&ctx, |ctx| {
-        ctx.set_source_rgb(1.0, 0.0, 0.0);
-        ctx.arc(0.0, 0.0, x / 250.0, 0.0, PI * 2.0);
-        ctx.fill()?;
-        ctx.set_line_width(x * 0.008);
-        ctx.move_to(-x * 0.5, x * 0.5);
-        ctx.line_to(x * 0.5, x * 0.5);
-        ctx.line_to(x * 0.5, -x * 0.5);
-        ctx.line_to(-x * 0.5, -x * 0.5);
-        ctx.line_to(-x * 0.5, x * 0.5);
-        ctx.stroke()
-    })?;
-    // old design
-    // scoped(&ctx, |ctx| {
-    //     ctx.set_source_rgb(0.298, 0.376, 0.898);
-    //     ctx.rotate(PI / 6.0);
-    //     old_design(&ctx, x)
-    // })?;
-
     let w1 = x * 0.015;
     let w2 = w1 * 0.5;
 
@@ -69,38 +49,45 @@ fn main() -> Result {
 
         // inner ring
         radial_repeat(&ctx, 6, PI / 6.0, |ctx| {
-            ctx.translate(0.0, x * 0.5 * 0.41);
-            ctx.set_line_width(x * 0.5 * 0.022);
-            ctx.arc(0.0, 0.0, x * 0.5 * 0.24, 0.0, PI * 2.0);
+            ctx.translate(0.0, x * 0.21);
+            ctx.set_line_width(w2);
+            ctx.arc(0.0, 0.0, x * 0.12, 0.0, PI * 2.0);
             ctx.stroke()?;
-            ctx.arc(0.0, 0.0, x * 0.5 * 0.1, 0.0, PI * 2.0);
+            ctx.arc(0.0, 0.0, x * 0.05, 0.0, PI * 2.0);
             ctx.stroke()?;
-            ctx.set_line_width(x * 0.5 * 0.016);
-            ctx.arc(0.0, 0.0, x * 0.5 * 0.2, 0.0, PI);
+            ctx.arc(0.0, 0.0, x * 0.1, -0.2, PI + 0.2);
             ctx.stroke()?;
-            ctx.translate(0.0, x * 0.5 * 0.035);
-            ctx.set_line_width(x * 0.5 * 0.016);
-            isosceles_triangle_stroke(&ctx, -x * 0.5 * 0.11, PI / 3.0)?;
-            let line_x = x * 0.5 * 0.16;
-            ctx.move_to(0.0, x * 0.5 * 0.06);
+            ctx.arc(0.0, 0.0, x * 0.1, 4.0, 5.4);
+            ctx.stroke()?;
+            ctx.translate(0.0, x * 0.017);
+            isosceles_triangle_stroke(&ctx, -x * 0.05, PI / 3.0)?;
+            let line_x = x * 0.08;
+            ctx.move_to(0.0, x * 0.03);
             ctx.line_to(0.0, line_x);
             ctx.move_to(0.0, 0.0);
             ctx.line_to(line_x, line_x * (PI / 6.0).tan());
             ctx.move_to(0.0, 0.0);
             ctx.line_to(-line_x, line_x * (PI / 6.0).tan());
-            let tangent_x = x * 0.5 * 0.031;
+            let tangent_x = x * 0.0155;
             ctx.translate(tangent_x, -tangent_x / (PI / 6.0).tan());
             ctx.move_to(0.0, 0.0);
             ctx.line_to(line_x, line_x * (PI / 6.0).tan());
             ctx.move_to(0.0, 0.0);
-            ctx.rel_line_to(0.0, -x * 0.5 * 0.22);
+            ctx.rel_line_to(0.0, -x * 0.09);
             ctx.translate(-tangent_x * 2.0, 0.0);
             ctx.move_to(0.0, 0.0);
             ctx.line_to(-line_x, line_x * (PI / 6.0).tan());
             ctx.move_to(0.0, 0.0);
-            ctx.rel_line_to(0.0, -x * 0.5 * 0.22);
-            ctx.stroke()?;
-            Ok(())
+            ctx.rel_line_to(0.0, -x * 0.09);
+            ctx.stroke()
+        })?;
+        radial_repeat(&ctx, 6, 0.0, |ctx| {
+            ctx.translate(0.0, x * 0.18);
+            ctx.set_line_width(w2);
+            let dx = x * 0.082;
+            ctx.move_to(-dx, 0.0);
+            ctx.line_to(dx, 0.0);
+            ctx.stroke()
         })?;
 
         // central element
@@ -187,85 +174,4 @@ fn isosceles_triangle_stroke(ctx: &Context, height: f64, top_angle: f64) -> Resu
     ctx.line_to(-b, 0.0);
     ctx.close_path();
     ctx.stroke()
-}
-
-fn old_design(ctx: &Context, x: f64) -> Result {
-    let half = x * 0.5;
-    ctx.set_line_width(half * 0.02);
-    ctx.arc(0.0, 0.0, half * 0.97, 0.0, PI * 2.0);
-    ctx.stroke()?;
-    radial_repeat(&ctx, 12, PI / 12.0, |ctx| {
-        ctx.translate(0.0, half * 0.66);
-        ctx.set_line_width(half * 0.012);
-        ctx.rectangle(-half * 0.02, half * 0.001, half * 0.04, half * 0.04);
-        ctx.stroke()?;
-        ctx.set_line_width(half * 0.012);
-        isosceles_triangle_stroke(&ctx, half * 0.28, PI / 3.4)?;
-        ctx.translate(0.0, half * 0.05);
-        ctx.set_line_width(half * 0.02);
-        isosceles_triangle_stroke(&ctx, half * 0.08, PI / 3.4)?;
-        ctx.translate(0.0, half * 0.08);
-        isosceles_triangle_stroke(&ctx, half * 0.08, PI / 3.4)?;
-        ctx.translate(0.0, half * 0.08);
-        isosceles_triangle_stroke(&ctx, half * 0.08, PI / 3.4)?;
-        Ok(())
-    })?;
-    radial_repeat(&ctx, 12, 0.0, |ctx| {
-        ctx.translate(0.0, half * 0.76);
-        ctx.set_line_width(half * 0.03);
-        ctx.arc(0.0, 0.0, half * 0.05, 0.0, PI * 2.0);
-        ctx.stroke()?;
-        ctx.set_line_width(half * 0.02);
-        ctx.arc(0.0, 0.0, half * 0.085, 0.0, PI * 2.0);
-        ctx.stroke()?;
-        Ok(())
-    })?;
-    ctx.set_line_width(half * 0.022);
-    ctx.arc(0.0, 0.0, half * 0.664, 0.0, PI * 2.0);
-    ctx.stroke()?;
-    radial_repeat(&ctx, 6, 0.0, |ctx| {
-        ctx.translate(0.0, half * 0.41);
-        ctx.set_line_width(half * 0.022);
-        ctx.arc(0.0, 0.0, half * 0.24, 0.0, PI * 2.0);
-        ctx.stroke()?;
-        ctx.arc(0.0, 0.0, half * 0.1, 0.0, PI * 2.0);
-        ctx.stroke()?;
-        ctx.set_line_width(half * 0.016);
-        ctx.arc(0.0, 0.0, half * 0.2, 0.0, PI);
-        ctx.stroke()?;
-        ctx.translate(0.0, half * 0.035);
-        ctx.set_line_width(half * 0.016);
-        isosceles_triangle_stroke(&ctx, -half * 0.11, PI / 3.0)?;
-        let line_x = half * 0.16;
-        ctx.move_to(0.0, half * 0.06);
-        ctx.line_to(0.0, line_x);
-        ctx.move_to(0.0, 0.0);
-        ctx.line_to(line_x, line_x * (PI / 6.0).tan());
-        ctx.move_to(0.0, 0.0);
-        ctx.line_to(-line_x, line_x * (PI / 6.0).tan());
-        let tangent_x = half * 0.031;
-        ctx.translate(tangent_x, -tangent_x / (PI / 6.0).tan());
-        ctx.move_to(0.0, 0.0);
-        ctx.line_to(line_x, line_x * (PI / 6.0).tan());
-        ctx.move_to(0.0, 0.0);
-        ctx.rel_line_to(0.0, -half * 0.22);
-        ctx.translate(-tangent_x * 2.0, 0.0);
-        ctx.move_to(0.0, 0.0);
-        ctx.line_to(-line_x, line_x * (PI / 6.0).tan());
-        ctx.move_to(0.0, 0.0);
-        ctx.rel_line_to(0.0, -half * 0.22);
-        ctx.stroke()?;
-        Ok(())
-    })?;
-    radial_repeat(&ctx, 6, PI / 6.0, |ctx| {
-        ctx.translate(0.0, half * 0.355);
-        ctx.set_line_width(half * 0.015);
-        ctx.arc(0.0, 0.0, half * 0.035, 0.0, PI * 2.0);
-        ctx.stroke()?;
-        ctx.arc(0.0, 0.0, half * 0.11, 0.0, PI * 2.0);
-        ctx.stroke()?;
-        Ok(())
-    })?;
-
-    Ok(())
 }
